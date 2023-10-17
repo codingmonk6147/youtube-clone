@@ -2,6 +2,7 @@ package com.codingmonk.demo.youtubeclone.controller;
 
 import com.codingmonk.demo.youtubeclone.service.VideoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,11 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class VideoController {
 
+
     private final VideoService videoService;
 
-    public VideoController(VideoService videoService) {
-        this.videoService = videoService;
-    }
 
 
     @PostMapping

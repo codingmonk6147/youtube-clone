@@ -4,54 +4,100 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class S3Service implements FileService{
 
+    public static final String BUCKET_NAME = "zoutube-clone";
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String CONTENT_LENGTH = "Content-Length";
+    public static final String VIDEO_CONTENT = "video/";
 
-    private final AmazonS3Client amazonS3Client;
 
-    public S3Service(AmazonS3Client amazonS3Client) {
-        this.amazonS3Client = amazonS3Client;
+    private S3Client getClient() {
+
+        return S3Client.builder()
+                .credentialsProvider(StaticCredentialsProvider
+                        .create(AwsBasicCredentials.create("AKIasfsfsf", "2awgwgwggfwfguwgwjgwreq")))
+                .region(Region.AP_SOUTH_1)
+                .build();
     }
 
-    public static final String BUCKET_NAME = "zoutube-clone";
+
+
 
     @Override
-    public String uploadFile(MultipartFile file){
+    public String uploadFile(MultipartFile file)  {
 
 
         //upload to s3
 
-
+        S3Client s3 = getClient();
         //Prepare a unique key
         var fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
 
-        var key = UUID.randomUUID().toString() + fileExtension;
+        var key = UUID.randomUUID().toString()+"."+ fileExtension;
 
-        var metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+//        var metadata = new ObjectMetadata();
+//        metadata.setContentLength(file.getSize());
+//        metadata.setContentType(file.getContentType());
 
-        try{
-            amazonS3Client.putObject(BUCKET_NAME ,key,file.getInputStream(),metadata);
-        }catch(IOException ioException){
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"An Exception occured while uploading the file");
+        Map<String,String> metadata = new HashMap<>();
+        metadata.put("Content-Type",file.getContentType());
+        metadata.put("Content-Length", String.valueOf(file.getSize()));
+
+
+
+        try {
+
+            byte[] bytes = new byte[0];
+            try {
+                bytes = file.getBytes();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            PutObjectRequest putOb = PutObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(key)
+                    .metadata(metadata)
+                    .build();
+
+
+            s3.putObject(putOb, RequestBody.fromBytes(bytes));
+        }catch(S3Exception e) {
+            System.err.println(e.awsErrorDetails().errorMessage());
+            System.exit(1);
         }
 
-        amazonS3Client.setObjectAcl(BUCKET_NAME , key, CannedAccessControlList.PublicRead);
+//        amazonS3Client.setObjectAcl(BUCKET_NAME , key, CannedAccessControlList.PublicRead);
+        GetUrlRequest request = GetUrlRequest.builder()
+                .bucket(BUCKET_NAME)
+                .key(key)
+                .build();
 
-        return amazonS3Client.getResourceUrl(BUCKET_NAME ,key);
+
+        return s3.utilities().getUrl(request).toString();
 
 
     }
