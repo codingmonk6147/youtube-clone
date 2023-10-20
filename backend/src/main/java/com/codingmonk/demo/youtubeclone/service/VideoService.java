@@ -1,5 +1,7 @@
 package com.codingmonk.demo.youtubeclone.service;
 
+import com.codingmonk.demo.youtubeclone.dto.UploadVideoResponse;
+import com.codingmonk.demo.youtubeclone.dto.VideoDto;
 import com.codingmonk.demo.youtubeclone.model.Video;
 import com.codingmonk.demo.youtubeclone.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +20,85 @@ public class VideoService {
 
 
 
-    public void uploadVideo(MultipartFile multipartFile){
+    public UploadVideoResponse uploadVideo(MultipartFile multipartFile){
 
 
             String videoUrl = s3Service.uploadFile(multipartFile);
             var video = new Video();
             video.setVideoUrl(videoUrl);
 
-            videoRepository.save(video);
+            Video savedVideo = videoRepository.save(video);
+
+            return new UploadVideoResponse(savedVideo.getId(),savedVideo.getVideoUrl());
+
+    }
+
+    public VideoDto editVideo(VideoDto videoDto) {
+
+        Video savedVideo = getVideoById(videoDto.getId());
+
+        savedVideo.setTitle(videoDto.getTitle());
+        savedVideo.setDescription(videoDto.getDescription());
+        savedVideo.setTags(videoDto.getTags());
+        savedVideo.setThumbnailUrl(videoDto.getThumbnailUrl());
+        savedVideo.setVideoStatus(videoDto.getVideoStatus());
 
 
+
+        videoRepository.save(savedVideo);
+
+        return videoDto;
+    }
+
+    public String uploadThumbnail(MultipartFile file, String videoId) {
+
+        Video savedVideo = getVideoById(videoId);
+
+       String thumbnailUrl =  s3Service.uploadFile(file);
+
+       savedVideo.setThumbnailUrl(thumbnailUrl);
+
+       return thumbnailUrl;
+    }
+
+
+    Video getVideoById(String videoId){
+        return videoRepository.findById(videoId)
+                .orElseThrow(() -> new IllegalArgumentException("Cannot find video by id - " + videoId));
+    }
+
+    public VideoDto getVideoDetails(String videoId) {
+
+        Video savedVideo = getVideoById(videoId);
+
+        VideoDto videoDto = new VideoDto();
+
+        videoDto.setVideoUrl(savedVideo.getVideoUrl());
+        videoDto.setThumbnailUrl(savedVideo.getThumbnailUrl());
+        videoDto.setId(savedVideo.getId());
+        videoDto.setTitle(savedVideo.getTitle());
+        videoDto.setDescription(savedVideo.getDescription());
+        videoDto.setTags(savedVideo.getTags());
+        videoDto.setVideoStatus(savedVideo.getVideoStatus());
+
+
+        return videoDto;
+    }
+
+    public VideoDto likeVideo(String videoId) {
+        Video video = getVideoById(videoId);
+
+        if (userService.ifLikedVideo(videoId)) {
+            video.decreaseLikeCount();
+            userService.removeFromLikedVideos(videoId);
+        } else if (userService.ifDisLikedVideo(videoId)) {
+            video.decreaseDisLikeCount();
+            userService.removeFromDisLikedVideo(videoId);
+        } else {
+            video.increaseLikeCount();
+            userService.addToLikedVideos(videoId);
+        }
+        videoRepository.save(video);
+        return videoMapper.mapToDto(video);
     }
 }

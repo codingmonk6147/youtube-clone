@@ -16,6 +16,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
@@ -37,7 +38,7 @@ public class S3Service implements FileService{
 
         return S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider
-                        .create(AwsBasicCredentials.create("AKIasfsfsf", "2awgwgwggfwfguwgwjgwreq")))
+                        .create(AwsBasicCredentials.create("AefafafV7SQWOefawefaqewfTSRAOE", "2aclfaepodNgueaflf8yq")))
                 .region(Region.AP_SOUTH_1)
                 .build();
     }
@@ -81,6 +82,7 @@ public class S3Service implements FileService{
                     .bucket(BUCKET_NAME)
                     .key(key)
                     .metadata(metadata)
+                    .acl(ObjectCannedACL.PUBLIC_READ)
                     .build();
 
 
@@ -89,6 +91,8 @@ public class S3Service implements FileService{
             System.err.println(e.awsErrorDetails().errorMessage());
             System.exit(1);
         }
+
+
 
 //        amazonS3Client.setObjectAcl(BUCKET_NAME , key, CannedAccessControlList.PublicRead);
         GetUrlRequest request = GetUrlRequest.builder()
