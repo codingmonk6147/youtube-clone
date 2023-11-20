@@ -7,8 +7,9 @@ import { ActivatedRoute } from '@angular/router';
 import { MatChipInputEvent } from '@angular/material/chips';
 
 import {MatChipEditedEvent, MatChipsModule} from '@angular/material/chips';
-import { VideoDto } from '../video-dto';
+
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { VideoDto } from '../upload-video/VideoDto';
 @Component({
   selector: 'app-save-video-details',
   templateUrl: './save-video-details.component.html',
@@ -48,7 +49,7 @@ export class SaveVideoDetailsComponent {
 
 
       this.videoService.getVideo(this.videoId).subscribe( data => {
-        this.videoUrl = data.videoUrl;
+        this.videoUrl = data.url;
         this.thumbnailUrl = data.thumbnailUrl;
         this.videoUrlAvailable = true;
       })
@@ -97,15 +98,19 @@ export class SaveVideoDetailsComponent {
       };
 
       saveVideo() {
+        // const userId = this.authService.getUserId();
         
         const videoMetaData: VideoDto = {
           "id": this.videoId,
-          "title": this.saveVideoForm.get('title')?.value,
+          "userId": 'Test',
+          "title": this.saveVideoForm.get('videoName')?.value,
           "description": this.saveVideoForm.get('description')?.value,
           "tags": this.tags,
           "videoStatus": this.saveVideoForm.get('videoStatus')?.value,
-          "videoUrl": this.videoUrl,
+          "url": this.videoUrl,
           "thumbnailUrl": this.thumbnailUrl,
+          "likeCount": 0,
+          "dislikeCount": 0
          
         }
         this.videoService.saveVideo(videoMetaData).subscribe(data => {

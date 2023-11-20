@@ -1,5 +1,6 @@
 package com.codingmonk.demo.youtubeclone.controller;
 
+import com.codingmonk.demo.youtubeclone.dto.CommentDto;
 import com.codingmonk.demo.youtubeclone.dto.UploadVideoResponse;
 import com.codingmonk.demo.youtubeclone.dto.VideoDto;
 import com.codingmonk.demo.youtubeclone.model.Video;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/videos")
@@ -47,9 +50,37 @@ public class VideoController {
     }
 
 
-    @PostMapping("{videoId}/like")
+    @PostMapping("/{videoId}/like")
     @ResponseStatus(HttpStatus.OK)
     public VideoDto likeVideo(@PathVariable String videoId) {
         return videoService.likeVideo(videoId);
     }
+
+
+    @PostMapping("/{videoId}/dislike")
+    @ResponseStatus(HttpStatus.OK)
+    public VideoDto dislikeVideo(@PathVariable String videoId) {
+        return videoService.dislikeVideo(videoId);
+    }
+
+    @PostMapping("/{videoId}/comment")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addComments(@PathVariable String videoId, @RequestBody CommentDto commentDto) {
+        videoService.addComment(videoId,commentDto);
+    }
+
+    @GetMapping("/{videoId}/comment")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> getAllComments(@PathVariable String videoId) {
+        return videoService.getAllComments(videoId);
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<VideoDto> getAllVideos(){
+        return videoService.getAllVideos();
+    }
+
+
+
 }

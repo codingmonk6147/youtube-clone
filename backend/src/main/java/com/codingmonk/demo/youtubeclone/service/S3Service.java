@@ -38,7 +38,7 @@ public class S3Service implements FileService{
 
         return S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider
-                        .create(AwsBasicCredentials.create("AefafafV7SQWOefawefaqewfTSRAOE", "2aclfaepodNgueaflf8yq")))
+                        .create(AwsBasicCredentials.create("A RAOE", "2acl7f9 8yq")))
                 .region(Region.AP_SOUTH_1)
                 .build();
     }

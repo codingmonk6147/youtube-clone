@@ -4,7 +4,8 @@ import { NgxFileDropEntry, FileSystemFileEntry, FileSystemDirectoryEntry } from 
 import {Observable} from "rxjs";
 
 import {UploadVideoResponse} from "./upload-video/UploadVideoResponse";
-import { VideoDto } from './video-dto';
+import { VideoDto } from './upload-video/VideoDto';
+
 
 
 @Injectable({
@@ -49,4 +50,19 @@ export class VideoService {
     saveVideo(videoMetaData : VideoDto):Observable<VideoDto>{
       return this.httpClient.put<VideoDto>("http://localhost:8080/api/videos/",videoMetaData)
     }
+
+
+    getAllVideos(): Observable<Array<VideoDto>> {
+      return this.httpClient.get<Array<VideoDto>>("http://localhost:8080/api/videos");
+    }
+
+    likeVideo(videoId: string | ""): Observable<VideoDto> {
+      return this.httpClient.post<VideoDto>("http://localhost:8080/api/videos/" + videoId + "/like",null);
+    }
+  
+    dislikeVideo(videoId: string | "") {
+      return this.httpClient.post<VideoDto>("http://localhost:8080/api/videos/" + videoId + "/dislike",null);
+    }
+  
+  
 }
